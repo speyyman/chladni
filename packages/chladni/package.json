@@ -1,0 +1,25 @@
+{
+  "name": "chladni",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vibration modes of free square and circular plates, their nodal lines, and sand that finds them.",
+  "license": "MIT",
+  "author": "Saeed Peyman",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run"
+  }
+}

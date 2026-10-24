@@ -1,0 +1,5 @@
+**/dist
+**/node_modules
+package-lock.json
+film/out
+film/out-e2e

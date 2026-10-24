@@ -1,0 +1,4 @@
+node_modules/
+dist/
+film/out/
+film/out-e2e/
