@@ -86,4 +86,4 @@ The plate's modes are computed in a Web Worker, so the page paints and stays res
 
 Code: MIT, see [LICENSE](LICENSE). The film and its stills: CC BY 4.0. Fonts (Instrument Sans, Martian Mono): SIL Open Font License 1.1, see [CREDITS.md](CREDITS.md).
 
-The code was written with Claude, an AI assistant, under the author's direction.
+Development was assisted by Claude (Anthropic).
