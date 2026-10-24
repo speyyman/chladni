@@ -1,0 +1,305 @@
+/* Temper: see DESIGN.md. Heat-blued steel, quartz sand, temper colours for the few accents. */
+:root {
+  --bench: #0d1117;
+  --panel: #141b24;
+  --rule: #33424f;
+  --steel: #1f3550;
+  --steel-edge: #2e4a69;
+  --quartz: #f2f4f6;
+  --ink: #e7ebef;
+  --ink-dim: #9ba7b4;
+  --straw: #e2c46c;
+  --bronze: #cf8a52;
+  --violet: #a98bc4;
+
+  --sans: 'Instrument Sans', system-ui, sans-serif;
+  --mono: 'Martian Mono', ui-monospace, monospace;
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --radius: 2px;
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bench);
+  color: var(--ink);
+  font: 400 14px/1.5 var(--sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--straw);
+  outline-offset: 2px;
+}
+
+a {
+  color: var(--straw);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip {
+  position: absolute;
+  left: var(--s4);
+  top: -100px;
+  background: var(--straw);
+  color: var(--bench);
+  padding: var(--s2) var(--s3);
+  border-radius: var(--radius);
+}
+.skip:focus {
+  top: var(--s2);
+}
+
+.top {
+  padding: var(--s5) var(--s4) var(--s3);
+  max-width: 1040px;
+  margin: 0 auto;
+}
+.top h1 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.top p {
+  margin: var(--s1) 0 0;
+  color: var(--ink-dim);
+  max-width: 62ch;
+}
+
+.bench {
+  display: grid;
+  gap: var(--s5);
+  padding: 0 var(--s4) var(--s7);
+  max-width: 1040px;
+  margin: 0 auto;
+}
+@media (min-width: 900px) {
+  .bench {
+    grid-template-columns: minmax(0, 640px) 320px;
+    justify-content: center;
+    align-items: start;
+  }
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s3);
+}
+#plate {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--bench);
+  cursor: crosshair;
+  touch-action: none;
+}
+.hint {
+  margin: 0;
+  color: var(--ink-dim);
+  font-size: 12px;
+}
+
+.dial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.dial-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s3);
+  flex-wrap: wrap;
+}
+.hz {
+  font: 400 40px/1 var(--mono);
+  letter-spacing: -0.02em;
+}
+.status {
+  font: 400 12px/1.4 var(--mono);
+  color: var(--ink-dim);
+}
+.status.sweeping {
+  color: var(--violet);
+}
+.scale {
+  position: relative;
+  /* Inset by half the slider thumb, so ticks and needle line up with the thumb's centre. */
+  margin: 0 8px;
+  height: 14px;
+  border-bottom: 1px solid var(--rule);
+}
+.scale .tick {
+  position: absolute;
+  bottom: 0;
+  width: 1px;
+  height: 8px;
+  background: var(--ink-dim);
+}
+.scale .tick.current {
+  height: 14px;
+  background: var(--straw);
+}
+.scale .needle {
+  position: absolute;
+  bottom: -4px;
+  width: 2px;
+  height: 18px;
+  margin-left: -1px;
+  background: var(--straw);
+}
+.scale-ends {
+  display: flex;
+  justify-content: space-between;
+  font: 400 12px var(--mono);
+  color: var(--ink-dim);
+}
+
+input[type='range'] {
+  width: 100%;
+  margin: 0;
+  height: 28px;
+  background: transparent;
+  accent-color: var(--straw);
+  cursor: pointer;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+.group.buttons {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.label,
+dt {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+.switches {
+  display: flex;
+  gap: var(--s2);
+}
+
+.button,
+.switch {
+  font: 600 14px/1 var(--sans);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: var(--s3) var(--s4);
+  min-height: 40px;
+  cursor: pointer;
+}
+.button:hover,
+.switch:hover {
+  border-color: var(--ink-dim);
+}
+.switch[aria-pressed='true'] {
+  background: var(--straw);
+  border-color: var(--straw);
+  color: var(--bench);
+}
+.button[aria-pressed='true'] {
+  border-color: var(--violet);
+  color: var(--violet);
+}
+.switch.sound[aria-pressed='true'] {
+  background: var(--bronze);
+  border-color: var(--bronze);
+  color: var(--bench);
+}
+
+.readouts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s3) var(--s4);
+  margin: 0;
+  padding: var(--s3) 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+}
+.readouts dd {
+  margin: var(--s1) 0 0;
+  font: 400 16px var(--mono);
+}
+
+.modes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 280px;
+  overflow-y: auto;
+  border-top: 1px solid var(--rule);
+}
+.modes button {
+  display: grid;
+  grid-template-columns: 6.5em 1fr auto;
+  gap: var(--s2);
+  width: 100%;
+  text-align: left;
+  font: 400 12px/1.2 var(--mono);
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  padding: var(--s2) var(--s1);
+  cursor: pointer;
+}
+.modes button:hover {
+  background: rgb(226 196 108 / 0.08);
+}
+.modes button[aria-current='true'] {
+  color: var(--straw);
+}
+.modes .om {
+  color: var(--ink-dim);
+}
+
+.notes {
+  color: var(--ink-dim);
+  font-size: 13px;
+}
+.notes summary {
+  cursor: pointer;
+  color: var(--ink);
+}
+.notes p {
+  margin: var(--s2) 0 0;
+}

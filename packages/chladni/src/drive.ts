@@ -29,6 +29,12 @@ export type DriveOptions = {
   at: { x: number; y: number }
   /** Damping ratio ζ. Default 0.004. */
   damping?: number
+  /**
+   * Leave out modes whose gain at this frequency is below this fraction of the
+   * largest. 0 (the default) keeps every mode; the demo uses 0.01, which keeps
+   * the picture and makes a frame several times cheaper.
+   */
+  prune?: number
 }
 
 export type Response = {
@@ -47,28 +53,31 @@ export type Response = {
   dominant: number
 }
 
-export function drive(plate: Plate, omega: number, { at, damping = 0.004 }: DriveOptions): Response {
+export function drive(plate: Plate, omega: number, { at, damping = 0.004, prune = 0 }: DriveOptions): Response {
   const size = plate.fields[0]!.size
   const re = new Float32Array(size * size)
   const im = new Float32Array(size * size)
-  let best = -1
-  let bestGain = 0
-  plate.modes.forEach((mode, k) => {
-    const field = plate.fields[k]!
-    const phiD = sample(field, at.x, at.y)
+  const gains = plate.modes.map((mode, k) => {
+    const phiD = sample(plate.fields[k]!, at.x, at.y)
     const wk = mode.omega
     const dr = wk * wk - omega * omega
     const di = 2 * damping * wk * omega
     const den = dr * dr + di * di
     // phiD / (dr + i di) = phiD (dr − i di) / den
-    const gr = (phiD * dr) / den
-    const gi = (-phiD * di) / den
-    const gain = Math.hypot(gr, gi)
-    if (gain > bestGain) {
-      bestGain = gain
+    return { gr: (phiD * dr) / den, gi: (-phiD * di) / den }
+  })
+  let best = -1
+  let bestGain = 0
+  gains.forEach(({ gr, gi }, k) => {
+    const g = Math.hypot(gr, gi)
+    if (g > bestGain) {
+      bestGain = g
       best = k
     }
-    const v = field.values
+  })
+  gains.forEach(({ gr, gi }, k) => {
+    if (Math.hypot(gr, gi) < prune * bestGain) return
+    const v = plate.fields[k]!.values
     for (let p = 0; p < v.length; p++) {
       re[p]! += gr * v[p]!
       im[p]! += gi * v[p]!

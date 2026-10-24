@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chladni plate: sand on a vibrating steel plate</title>
+    <meta
+      name="description"
+      content="Drive a steel plate at any frequency and watch sand gather on its still lines. Real plate physics: free square and circular plates, computed in your browser."
+    />
+    <meta name="theme-color" content="#0d1117" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231f3550'/%3E%3Cpath d='M0 0L16 16M16 0L0 16' stroke='%23f2f4f6'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <a class="skip" href="#controls">Skip to controls</a>
+    <header class="top">
+      <h1>Chladni plate</h1>
+      <p>A 24 cm steel plate, 1 mm thick, free at every edge. Drive it at a frequency and the sand finds the lines that stay still.</p>
+    </header>
+    <main class="bench">
+      <section class="stage" aria-label="Plate">
+        <canvas id="plate" tabindex="0" role="img" aria-label="The plate"></canvas>
+        <p class="hint" id="hint">Click the plate to move the drive point, or focus it and use the arrow keys.</p>
+        <div class="dial">
+          <div class="dial-head">
+            <output id="hz" class="hz" for="freq">57 Hz</output>
+            <span id="status" class="status" aria-live="polite"></span>
+          </div>
+          <div class="scale" id="scale" aria-hidden="true"></div>
+          <label class="visually-hidden" for="freq">Frequency</label>
+          <input id="freq" type="range" min="0" max="1000" step="1" value="0" />
+          <div class="scale-ends" aria-hidden="true"><span>40 Hz</span><span>1600 Hz</span></div>
+        </div>
+      </section>
+      <aside class="panel" id="controls" aria-label="Controls">
+        <div class="group" role="group" aria-label="Plate shape">
+          <span class="label">Plate</span>
+          <div class="switches">
+            <button type="button" class="switch" data-shape="square" aria-pressed="true">Square</button>
+            <button type="button" class="switch" data-shape="circle" aria-pressed="false">Disc</button>
+          </div>
+        </div>
+        <div class="group buttons">
+          <button type="button" class="button" id="sweep" aria-pressed="false">Sweep</button>
+          <button type="button" class="button" id="scatter">Scatter sand</button>
+        </div>
+        <div class="group buttons">
+          <button type="button" class="switch" id="lines" aria-pressed="false">Nodal lines</button>
+          <button type="button" class="switch sound" id="sound" aria-pressed="false">Sound off</button>
+        </div>
+        <dl class="readouts">
+          <div>
+            <dt>Ω</dt>
+            <dd id="omega">0</dd>
+          </div>
+          <div>
+            <dt>Nearest mode</dt>
+            <dd id="nearest">–</dd>
+          </div>
+          <div>
+            <dt>Plate motion</dt>
+            <dd id="strength">0</dd>
+          </div>
+          <div>
+            <dt>Grains</dt>
+            <dd id="grains">0</dd>
+          </div>
+        </dl>
+        <div class="group">
+          <span class="label" id="modes-label">Resonances</span>
+          <ol class="modes" id="modes" aria-labelledby="modes-label"></ol>
+        </div>
+        <details class="notes">
+          <summary>What is modelled</summary>
+          <p>
+            Thin-plate (Kirchhoff) theory. The square's modes come from a Rayleigh–Ritz solution with Legendre polynomials and match
+            published values to five figures; the disc's are exact Bessel-function solutions. Steel: E = 200 GPa, ρ = 7850 kg/m³, ν = 0.3.
+          </p>
+          <p>
+            The plate is driven at one point, each mode responding as a lightly damped oscillator (damping ratio 0.004, assumed). Sand is a
+            random walk whose steps grow with the plate's local acceleration, so grains leave the moving parts and stop on the still lines.
+            Bouncing, friction, air currents and grains falling off the edge are left out.
+          </p>
+          <p>
+            Square-plate labels give the mode's symmetry: S or A about the vertical centre line, then the horizontal one, then the diagonal
+            (left out for the pairs that share a frequency). Disc labels give nodal diameters and nodal circles.
+          </p>
+          <p><a href="https://github.com/speyyman/chladni">Source, tests and references</a></p>
+        </details>
+      </aside>
+    </main>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

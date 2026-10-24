@@ -88,10 +88,24 @@ export class Sand {
    */
   step(acceleration: Field, { threshold = 0.05, scale, jump = 0.04 }: StepOptions): number {
     let moved = 0
+    const { size, values } = acceleration
+    const half = size / 2
+    const inv = 1 / scale
     for (let i = 0; i < this.count; i++) {
       const x = this.x[i]!
       const y = this.y[i]!
-      const a = sample(acceleration, x, y) / scale
+      // Bilinear lookup, inlined: this loop runs for every grain on every frame.
+      let fx = (x + 1) * half - 0.5
+      let fy = (y + 1) * half - 0.5
+      fx = fx < 0 ? 0 : fx > size - 1.000001 ? size - 1.000001 : fx
+      fy = fy < 0 ? 0 : fy > size - 1.000001 ? size - 1.000001 : fy
+      const ix = fx | 0
+      const iy = fy | 0
+      const u = fx - ix
+      const v = fy - iy
+      const o = iy * size + ix
+      const a =
+        ((values[o]! * (1 - u) + values[o + 1]! * u) * (1 - v) + (values[o + size]! * (1 - u) + values[o + size + 1]! * u) * v) * inv
       if (a <= threshold) continue
       // √a rather than a: grains near a node still settle in reasonable time, and the walk's
       // stationary density, which goes as 1/a, still piles them onto the zero lines.

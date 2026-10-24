@@ -12,17 +12,33 @@ describe('Bessel functions', () => {
     expect(besselI(1, 1)).toBeCloseTo(0.5651591039924851, 12)
   })
 
+  it('keep full relative accuracy where they are tiny, and agree with mpmath elsewhere', () => {
+    // Values from mpmath (computed to 30 digits, rounded here to double precision).
+    const rel = (a: number, b: number) => Math.abs(a / b - 1)
+    expect(rel(besselJ(10, 1), 2.6306151236874534e-10)).toBeLessThan(1e-12)
+    expect(rel(besselI(10, 1), 2.7529480398368737e-10)).toBeLessThan(1e-12)
+    expect(rel(besselJ(20, 13), 0.0008971406296777854)).toBeLessThan(1e-9)
+    expect(rel(besselI(12, 9), 0.6331241362661486)).toBeLessThan(1e-12)
+    expect(rel(besselJ(3, 7.5), -0.2580609131934603)).toBeLessThan(1e-12)
+    expect(rel(besselI(2, 15), 295899.38370188634)).toBeLessThan(1e-12)
+  })
+
   it('vanish at the first zeros of J0 and J1', () => {
     expect(Math.abs(besselJ(0, 2.404825557695773))).toBeLessThan(1e-13)
     expect(Math.abs(besselJ(1, 3.831705970207512))).toBeLessThan(1e-13)
   })
 
   it('have derivatives that agree with finite differences', () => {
-    const h = 1e-5
+    // Fourth-order central differences with a step large enough that rounding does not dominate.
+    const h = 1e-3
+    const d = (f: (x: number) => number, x: number) => (f(x - 2 * h) - 8 * f(x - h) + 8 * f(x + h) - f(x + 2 * h)) / (12 * h)
     for (const n of [0, 1, 3, 6])
-      for (const x of [0.7, 4.2, 11.5]) {
-        expect(besselJPrime(n, x)).toBeCloseTo((besselJ(n, x + h) - besselJ(n, x - h)) / (2 * h), 8)
-        expect(besselIPrime(n, x)).toBeCloseTo((besselI(n, x + h) - besselI(n, x - h)) / (2 * h) / 1, 4)
+      for (const x of [0.7, 4.2, 11.5, 17]) {
+        expect(besselJPrime(n, x)).toBeCloseTo(
+          d((t) => besselJ(n, t), x),
+          8,
+        )
+        expect(besselIPrime(n, x) / besselI(n + 1, x)).toBeCloseTo(d((t) => besselI(n, t), x) / besselI(n + 1, x), 8)
       }
   })
 

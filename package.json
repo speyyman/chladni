@@ -18,7 +18,8 @@
     "e2e": "npm run build && node apps/demo/test/e2e.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc -p packages/chladni --noEmit && tsc -p apps/demo --noEmit"
+    "typecheck": "tsc -p packages/chladni --noEmit && tsc -p apps/demo --noEmit",
+    "docs:shots": "node apps/demo/test/screenshots.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
