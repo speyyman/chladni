@@ -12,7 +12,7 @@ Implemented as CSS custom properties in `src/style.css`.
 
 | Token          | Hex       | Use                                                                |
 | -------------- | --------- | ------------------------------------------------------------------ |
-| `--bench`      | `#0d1117` | Page background                                                    |
+| `--bench`      | `#0f1112` | Page background                                                    |
 | `--panel`      | `#141b24` | Control panel                                                      |
 | `--rule`       | `#33424f` | Hairlines and slider tracks (never text)                           |
 | `--steel`      | `#1f3550` | The plate                                                          |
@@ -24,7 +24,7 @@ Implemented as CSS custom properties in `src/style.css`.
 | `--bronze`     | `#cf8a52` | Sound: on, and the drive point                                     |
 | `--violet`     | `#a98bc4` | Sweep in progress                                                  |
 
-Text contrast (WCAG 2, computed): ink on bench 15.8:1, on panel 14.5:1; ink-dim on bench 7.7:1, on panel 7.1:1; straw on bench 11.1:1; bronze on bench 6.7:1; violet on bench 6.5:1; bench-coloured text on a straw button 11.1:1. Rule (1.8:1) is decoration only.
+Text contrast (WCAG 2, computed; the bench is a near-neutral lamp-black, not a blue-black): ink on bench 15.8:1, on panel 14.5:1; ink-dim on bench 7.7:1, on panel 7.1:1; straw on bench 11.1:1; bronze on bench 6.7:1; violet on bench 6.5:1; bench-coloured text on a straw button 11.1:1. Rule (1.8:1) is decoration only.
 
 ### Type
 
@@ -63,7 +63,7 @@ No icon set. Controls are words. The drive point is a small bronze ring on the p
 
 - Never make a sound the visitor did not ask for. Sound starts off, and nothing creates an audio context until the sound switch is pressed.
 - Never draw a number the model did not compute: every hertz figure comes from the plate's frequency parameter and the stated steel plate.
-- Never use more than one temper colour for one meaning, and never use green or amber.
+- Never use more than one temper colour for one meaning, and never use green, or a saturated orange such as Copyboard's safelight amber: straw is the palest temper colour and stays pale.
 
 ## Layout
 

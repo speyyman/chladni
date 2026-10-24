@@ -6,6 +6,13 @@
  * plate cannot throw a grain at all, which is why a plate driven between
  * resonances leaves the last pattern in place.
  *
+ * Grains the plate is too weak to throw are not quite still either: while the
+ * plate is ringing they creep slowly down the slope of its motion, towards the
+ * nodal lines. Faraday saw this on a gently vibrating plate, where small heaps
+ * "often slowly travel towards the quiescent lines" (1831, §6). Without the
+ * creep, grains would stop on the edge of the zone too weak to throw them,
+ * not on the lines themselves.
+ *
  * This is a deliberately simple model of the mechanism Chladni and Faraday
  * describe (heavy grains go to the nodal lines). It leaves out bouncing
  * dynamics, friction, air currents (which carry very light powder to the
@@ -40,6 +47,8 @@ export type StepOptions = {
   scale: number
   /** Jump length, in plate units, for a grain at full strength. Default 0.04. */
   jump?: number
+  /** How far an unthrown grain creeps per step towards stiller plate, in plate units. Default 0.004. */
+  creep?: number
 }
 
 export class Sand {
@@ -86,11 +95,16 @@ export class Sand {
    * grains wander out of busy regions and stop where the plate is still.
    * Returns how many moved.
    */
-  step(acceleration: Field, { threshold = 0.05, scale, jump = 0.04 }: StepOptions): number {
+  step(acceleration: Field, { threshold = 0.05, scale, jump = 0.04, creep = 0.004 }: StepOptions): number {
     let moved = 0
     const { size, values } = acceleration
     const half = size / 2
     const inv = 1 / scale
+    // Grains only creep while the plate is ringing somewhere: between resonances everything rests.
+    let peak = 0
+    for (let i = 0; i < values.length; i++) if (values[i]! > peak) peak = values[i]!
+    const ringing = peak * inv > threshold
+    const cell = 2 / size
     for (let i = 0; i < this.count; i++) {
       const x = this.x[i]!
       const y = this.y[i]!
@@ -106,7 +120,33 @@ export class Sand {
       const o = iy * size + ix
       const a =
         ((values[o]! * (1 - u) + values[o + 1]! * u) * (1 - v) + (values[o + size]! * (1 - u) + values[o + size + 1]! * u) * v) * inv
-      if (a <= threshold) continue
+      if (a <= threshold) {
+        if (!ringing || creep === 0) continue
+        // Creep a fixed small step down the gradient of the acceleration (central differences on the grid).
+        const xl = ix > 0 ? ix - 1 : ix
+        const xr = ix < size - 1 ? ix + 1 : ix
+        const yd = iy > 0 ? iy - 1 : iy
+        const yu = iy < size - 1 ? iy + 1 : iy
+        const gx = (values[iy * size + xr]! - values[iy * size + xl]!) / ((xr - xl || 1) * cell)
+        const gy = (values[yu * size + ix]! - values[yd * size + ix]!) / ((yu - yd || 1) * cell)
+        const g = Math.hypot(gx, gy)
+        if (g === 0) continue
+        let cx = x - (creep * gx) / g
+        let cy = y - (creep * gy) / g
+        if (this.plate === 'square') {
+          cx = cx > 1 ? 1 : cx < -1 ? -1 : cx
+          cy = cy > 1 ? 1 : cy < -1 ? -1 : cy
+        } else {
+          const r = Math.hypot(cx, cy)
+          if (r > 1) {
+            cx /= r
+            cy /= r
+          }
+        }
+        this.x[i] = cx
+        this.y[i] = cy
+        continue
+      }
       // √a rather than a: grains near a node still settle in reasonable time, and the walk's
       // stationary density, which goes as 1/a, still piles them onto the zero lines.
       const s = jump * Math.sqrt(Math.min(1, a))

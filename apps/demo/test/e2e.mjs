@@ -192,7 +192,9 @@ const spyAudio = () => {
       `CPU throttle ${rate}×: ${first.median.toFixed(0)} fps at first (${first.grains} grains, ${first.steps} steps per frame), ` +
         `${settled.median.toFixed(0)} fps after the fallback (${settled.grains} grains, ${settled.steps} steps per frame)`,
     )
-    if (rate === 4) assert.ok(settled.median >= 45, 'with 4× throttling the fallback should bring the frame rate back near 60 fps')
+    // Asserted only where the machine is known (set PERF_ASSERT=1); shared CI runners only log it.
+    if (rate === 4 && process.env.PERF_ASSERT === '1')
+      assert.ok(settled.median >= 45, 'with 4× throttling the fallback should bring the frame rate back near 60 fps')
     await page.close()
   }
 }

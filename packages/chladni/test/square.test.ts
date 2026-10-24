@@ -25,8 +25,7 @@ describe('free square plate (Rayleigh–Ritz)', () => {
     ;[24.2702, 63.687, 122.4449, 168.4888].forEach((v, k) => expect(Math.abs(sss[k]! / v - 1)).toBeLessThan(1e-4))
     const ssa = modes.filter((m) => label(m) === 'SSA').map((m) => m.omega)
     expect(Math.abs(ssa[0]! / 19.5961 - 1)).toBeLessThan(1e-4)
-    // Leissa's table also lists 65.368 in this class; neither this solver nor Narita (2022), whose
-    // sixth mode is 61.093, finds a mode between 34.8 and 61.1 or near 65.4 (see README).
+    // Leissa's table 4.65 also lists 65.368 in this class; this converged solver finds no mode near it (see README).
     expect(ssa.slice(1, 3).map((v) => Math.abs(v / 117.1093 - 1) < 1e-4 || Math.abs(v / 161.5049 - 1) < 1e-4)).toEqual([true, true])
   })
 
@@ -45,6 +44,29 @@ describe('free square plate (Rayleigh–Ritz)', () => {
       expect(aas[k]!).toBeLessThan(hi)
     })
   })
+
+  it('lies inside Leissa’s bounds for the doubly antisymmetric modes (table 4.75, b/a = 1, ν = 0.3)', () => {
+    // These bounds also rule out table 4.65's entry at 173.695: mode 4 is at most 153.12 and mode 5 at least 196.46.
+    const aa = modes.filter((m) => m.symmetry.x === 'A' && m.symmetry.y === 'A').map((m) => m.omega)
+    const bounds: [number, number][] = [
+      [13.092, 13.474],
+      [66.508, 69.576],
+      [75.146, 77.411],
+      [145.57, 153.12],
+      [196.46, 205.17],
+    ]
+    bounds.forEach(([lo, hi], k) => {
+      expect(aa[k]!).toBeGreaterThan(lo)
+      expect(aa[k]!).toBeLessThan(hi)
+    })
+  })
+
+  it('is converged for every mode the demo shows: 16 and 22 terms agree to 1 part in 50,000 below Ω = 380', () => {
+    const fine = squareModes({ terms: 22 })
+    const shown = squareModes({ terms: 16 }).filter((m) => m.omega < 380)
+    expect(shown.length).toBe(38)
+    shown.forEach((m, k) => expect(Math.abs(m.omega / fine[k]!.omega - 1)).toBeLessThan(2e-5))
+  }, 60000)
 
   it('converges from above as terms are added (Ritz values are upper bounds)', () => {
     const coarse = squareModes({ terms: 8 })

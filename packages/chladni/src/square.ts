@@ -108,8 +108,9 @@ export type SquareOptions = {
 
 /**
  * The modes of the free square plate, rigid-body motions left out, sorted by
- * frequency. With 16 terms per direction the first 30 or so are converged to
- * better than 0.1%.
+ * frequency. With 16 terms per direction the 38 modes below Ω ≈ 379 (1,600 Hz
+ * on the demo plate) differ from a 22-term solution by less than 1 part in
+ * 50,000 (test/square.test.ts).
  */
 export function squareModes({ nu = 0.3, terms = 16 }: SquareOptions = {}): SquareMode[] {
   const N = terms

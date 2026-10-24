@@ -22,7 +22,7 @@ Needs Node 20 or later.
 npm ci
 npm run build                 # library, then the demo into apps/demo/dist
 npm run dev -w chladni-demo   # the demo at http://localhost:5173/chladni/
-npm test                      # 32 library tests and 6 film tests
+npm test                      # 37 library tests and 6 film tests
 npx playwright install chromium && npm run e2e   # end-to-end checks of the demo
 ```
 
@@ -42,20 +42,21 @@ Lower level: `squareModes()`, `circleModes()`, `modeField()`, `nodalLines()`, `d
 
 ## The physics
 
-**The square plate.** A thin plate (Kirchhoff theory) with all four edges free, the plate Chladni bowed. There is no closed-form solution, so the modes come from the Rayleigh–Ritz method: the deflection is a sum of products of Legendre polynomials, and minimising the ratio of bending energy to kinetic energy gives a matrix eigenproblem, solved in four blocks by symmetry. Ritz himself introduced the method on this problem in 1909. With 16 polynomials per direction the 38 modes below 1,600 Hz are converged to about 1 part in 100,000.
+**The square plate.** A thin plate (Kirchhoff theory) with all four edges free, the plate Chladni bowed. There is no closed-form solution, so the modes come from the Rayleigh–Ritz method: the deflection is a sum of products of Legendre polynomials, and minimising the ratio of bending energy to kinetic energy gives a matrix eigenproblem, solved in four blocks by symmetry. Ritz himself introduced the method on this problem in 1909. With 16 polynomials per direction the 38 modes below 1,600 Hz agree with a 22-polynomial solution to better than 1 part in 50,000 (a test checks this).
 
 **The disc.** A thin circular plate with a free edge has exact solutions, w = [J_n(λr) + C I_n(λr)] cos nθ, with Bessel functions J and I. The free-edge conditions (no bending moment, no effective shear) give an equation for λ, solved numerically.
 
 **Driving it.** The plate is driven at one point. Each mode responds like a lightly damped oscillator in proportion to how much it moves at that point (standard modal superposition), so a mode with a node at the drive point is not excited at all. The damping ratio, 0.004, is an assumption.
 
-**Sand.** Grains feel the plate's acceleration. Where it is strong they are thrown and land a random distance away; below a threshold they stay put. So they wander out of moving regions and stop on the nodal lines. It is a deliberately simple model: no bouncing dynamics, friction, air currents or grains falling off the edge.
+**Sand.** Grains feel the plate's acceleration. Where it is strong they are thrown and land a random distance away. Below a threshold they are not thrown, but while the plate rings they creep slowly towards stiller plate, as Faraday saw small heaps do on a gently vibrating plate (1831, §6). So they wander out of moving regions and end on the nodal lines; tests check that most grains end within 0.03 of the exact lines of the two lowest modes. It is a deliberately simple model: no bouncing dynamics, friction, air currents or grains falling off the edge.
 
 **Hertz.** Frequencies are for a 24 cm square, or a 24 cm disc, of steel 1 mm thick (E = 200 GPa, ρ = 7850 kg/m³, ν = 0.3, typical handbook values), from f = Ω / (2π a²) · √(D / ρh).
 
 ## How it is checked
 
 - **Square plate, frequencies.** Compared with Y. Narita, "Natural frequencies of isotropic rectangular plates in improved accuracy", EPI International Journal of Engineering 5 (2022) 26–36, doi:10.25042/epi-ije.022022.05, table 17: the six lowest values for ν = 0.3 (13.468, 19.596, 24.270, 34.801, 34.801, 61.093) and four for ν = 0.333 agree to five significant figures. The doubly symmetric modes agree with A. W. Leissa, _Vibration of Plates_, NASA SP-160 (1969), table 4.65, to 1 part in 10,000, and the twisting modes lie inside Leissa's bounds (table 4.67).
-- **A discrepancy in the literature.** Leissa's table 4.65 (after his ref. 4.113) also lists modes at 65.368 and 173.695, and gives one degenerate pair as both 34.8010 and 35.1564, which cannot both be right on a square. Neither this solver nor Narita finds those values (Narita's sixth mode is 61.093). The tests use only values that independent sources agree on.
+- **A discrepancy in the literature.** Leissa's table 4.65 (after his ref. 4.113) lists two modes this solver does not find, at 65.368 and 173.695. The second is ruled out by Leissa's own bounds for the doubly antisymmetric modes (table 4.75: mode 4 is at most 153.12 and mode 5 at least 196.46). The first has no published bound to test against, but the solver, whose basis is complete and whose values are converged, finds no mode near it. The antisymmetric entries of table 4.65 that do correspond to modes here (69.5020, 77.5897, 156.2387) are all higher than this solver's values, as less converged upper bounds would be; 77.5897 is even above Leissa's own bound of 77.354 (table 4.67). Separately, figures 4.52 and 4.53 give one degenerate pair as both 34.8010 and 35.1564, which cannot both be right on a square; table 4.66 and Narita agree on 34.801. The tests use only values that independent sources agree on.
+- **Square plate, bounds.** Every doubly antisymmetric mode up to the fifth lies inside Leissa's table 4.75 bounds.
 - **Disc.** Frequencies within 0.2% of Leissa's table 2.5 (ν = 0.33) for every entry the table gives as exact, and nodal-circle radii within 0.005 of table 2.7. A finite-difference check confirms zero bending moment at the rim.
 - **Nodal lines.** For the classical membrane approximation cos mπx cos nπy ± cos nπx cos mπy, the extracted nodal lines are checked against their exact zero sets; for the plate, against the lines its symmetry forces (centre lines, diagonals, nodal diameters).
 - **Bessel functions** against Abramowitz and Stegun and against mpmath to 1e-12.

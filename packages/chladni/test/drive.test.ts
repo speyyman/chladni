@@ -86,3 +86,27 @@ describe('physical frequency', () => {
     expect(omegaFor(f, DEMO_SQUARE)).toBeCloseTo(13.468, 10)
   })
 })
+
+describe('sand on the true nodal lines', () => {
+  it('gathers within 0.03 of the exact nodal lines of the twisting mode (the centre lines)', () => {
+    // The lowest mode is antisymmetric about both centre lines, so its nodal lines are exactly x = 0 and y = 0.
+    const r = drive(plate, plate.modes[0]!.omega, { at })
+    const ref = referenceAcceleration(plate, { at })
+    const sand = new Sand({ count: 4000, seed: 3 })
+    for (let i = 0; i < 600; i++) sand.step(r.acceleration, { scale: ref })
+    let near = 0
+    for (let i = 0; i < sand.count; i++) if (Math.min(Math.abs(sand.x[i]!), Math.abs(sand.y[i]!)) < 0.03) near++
+    // The band covers about 6% of the plate, so this is a strong concentration.
+    expect(near / sand.count).toBeGreaterThan(0.6)
+  }, 30000)
+
+  it('gathers on both diagonals for the saddle mode', () => {
+    const r = drive(plate, plate.modes[1]!.omega, { at })
+    const ref = referenceAcceleration(plate, { at })
+    const sand = new Sand({ count: 4000, seed: 3 })
+    for (let i = 0; i < 600; i++) sand.step(r.acceleration, { scale: ref })
+    let near = 0
+    for (let i = 0; i < sand.count; i++) if (Math.abs(Math.abs(sand.x[i]!) - Math.abs(sand.y[i]!)) / Math.SQRT2 < 0.03) near++
+    expect(near / sand.count).toBeGreaterThan(0.6)
+  }, 30000)
+})
