@@ -52,5 +52,7 @@ window.film = {
 const q = new URLSearchParams(location.search)
 if (q.has('t')) {
   const orientation = (q.get('o') === 'portrait' ? 'portrait' : 'landscape') as Orientation
-  void window.film.setup({ orientation }).then(() => window.film.frame(Math.max(0, Math.min(FRAMES - 1, Math.round(Number(q.get('t')) * FPS)))))
+  void window.film
+    .setup({ orientation })
+    .then(() => window.film.frame(Math.max(0, Math.min(FRAMES - 1, Math.round(Number(q.get('t')) * FPS)))))
 }

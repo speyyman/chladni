@@ -74,14 +74,30 @@ export function cues(resonanceHz: { square: number[]; circle: number[] }): Cue[]
   const s0 = resonanceHz.square[SQUARE_PICKS[0]!]!
   return [
     { start: 0.5, end: 4.8, text: 'Sand on a steel plate, shaken at one frequency at a time.' },
-    { start: slot(sq, 0), end: slot(sq, 0) + RAMP, text: 'A 24 cm square of steel, 1 mm thick, free at every edge. Most frequencies barely move it.' },
-    { start: slot(sq, 0) + RAMP, end: slot(sq, 1), text: `At ${hz(s0)} it resonates. Where the plate moves, sand is thrown off. Where it stays still, sand collects.` },
+    {
+      start: slot(sq, 0),
+      end: slot(sq, 0) + RAMP,
+      text: 'A 24 cm square of steel, 1 mm thick, free at every edge. Most frequencies barely move it.',
+    },
+    {
+      start: slot(sq, 0) + RAMP,
+      end: slot(sq, 1),
+      text: `At ${hz(s0)} it resonates. Where the plate moves, sand is thrown off. Where it stays still, sand collects.`,
+    },
     { start: slot(sq, 1), end: slot(sq, 1) + RAMP, text: 'Between resonances the plate hardly moves, and the sand rests.' },
-    { start: slot(sq, 1) + RAMP, end: slot(sq, 4), text: 'Each resonance has its own still lines, its nodal lines. Same plate, different frequency.' },
+    {
+      start: slot(sq, 1) + RAMP,
+      end: slot(sq, 4),
+      text: 'Each resonance has its own still lines, its nodal lines. Same plate, different frequency.',
+    },
     { start: slot(sq, 4), end: sq.end, text: 'Higher resonances, more lines.' },
     { start: slot(disc, 0), end: slot(disc, 2), text: 'A disc of the same steel. Its still lines are diameters and circles.' },
     { start: slot(disc, 2), end: slot(disc, 4), text: 'These are Chladni figures, after Ernst Chladni, who published them in 1787.' },
-    { start: slot(disc, 4), end: disc.end, text: 'Every figure here is computed from the physics of a thin plate. Nothing draws the lines but the sand.' },
+    {
+      start: slot(disc, 4),
+      end: disc.end,
+      text: 'Every figure here is computed from the physics of a thin plate. Nothing draws the lines but the sand.',
+    },
     { start: disc.end + 0.5, end: DURATION - 0.2, text: 'Sound, made visible.' },
   ]
 }

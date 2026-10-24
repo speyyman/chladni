@@ -22,7 +22,7 @@ Needs Node 20 or later.
 npm ci
 npm run build                 # library, then the demo into apps/demo/dist
 npm run dev -w chladni-demo   # the demo at http://localhost:5173/chladni/
-npm test                      # 32 unit tests
+npm test                      # 32 library tests and 6 film tests
 npx playwright install chromium && npm run e2e   # end-to-end checks of the demo
 ```
 

@@ -14,7 +14,7 @@
 import { createHash } from 'node:crypto'
 import { spawn } from 'node:child_process'
 import { createServer } from 'node:http'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { extname, join, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
@@ -71,13 +71,21 @@ function encoder(outputs, fps) {
   return { ff, done }
 }
 
-const h264 = (file, preview) => [
+// Every grain that is thrown moves every frame, which is hard to compress. So each cut is first
+// written as a near-lossless master, then encoded for the web from it: H.264 capped at 1.5 Mbit/s,
+// and for the landscape cut a two-pass VP9 WebM at 1.1 Mbit/s. The master is deleted afterwards.
+const master = (file) => ['-c:v', 'libx264', '-preset', 'veryfast', '-crf', '14', '-pix_fmt', 'yuv420p', file]
+const h264 = (file) => [
   '-c:v',
   'libx264',
   '-preset',
-  preview ? 'veryfast' : 'slow',
+  'slow',
   '-crf',
-  '20',
+  '28',
+  '-maxrate',
+  '1500k',
+  '-bufsize',
+  '3000k',
   '-pix_fmt',
   'yuv420p',
   '-profile:v',
@@ -86,23 +94,15 @@ const h264 = (file, preview) => [
   '+faststart',
   file,
 ]
-const vp9 = (file) => [
-  '-c:v',
-  'libvpx-vp9',
-  '-b:v',
-  '0',
-  '-crf',
-  '34',
-  '-row-mt',
-  '1',
-  '-deadline',
-  'good',
-  '-cpu-used',
-  '2',
-  '-pix_fmt',
-  'yuv420p',
-  file,
-]
+const vp9 = ['-c:v', 'libvpx-vp9', '-b:v', '1100k', '-row-mt', '1', '-deadline', 'good', '-pix_fmt', 'yuv420p']
+
+function ffmpeg(argv) {
+  return new Promise((resolve, reject) =>
+    spawn(args.ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', ...argv], { stdio: 'inherit' }).on('close', (code) =>
+      code === 0 ? resolve() : reject(new Error(`ffmpeg exited with ${code}`)),
+    ),
+  )
+}
 
 if (args.stills) {
   await mkdir(join(outDir, 'stills'), { recursive: true })
@@ -149,9 +149,8 @@ for (const orientation of cuts) {
   const from = Number(args.from ?? 0)
   const to = Math.min(frames, Number(args.to ?? (args.preview ? fps * 10 : frames)))
   const name = `sound-made-visible-${width}x${height}`
-  const outputs = [...h264(join(outDir, `${name}.mp4`), args.preview)]
-  if (orientation === 'landscape' && !args.preview) outputs.push(...vp9(join(outDir, `${name}.webm`)))
-  const { ff, done } = encoder(outputs, fps)
+  const masterFile = join(outDir, `${name}.master.mp4`)
+  const { ff, done } = encoder(master(masterFile), fps)
 
   const hashes = []
   const started = Date.now()
@@ -169,6 +168,29 @@ for (const orientation of cuts) {
   }
   ff.stdin.end()
   await done
+  await ffmpeg(['-i', masterFile, ...h264(join(outDir, `${name}.mp4`))])
+  if (orientation === 'landscape' && !args.preview) {
+    const log = join(outDir, 'vp9-2pass')
+    await ffmpeg(['-i', masterFile, ...vp9, '-cpu-used', '4', '-pass', '1', '-passlogfile', log, '-an', '-f', 'null', '-'])
+    await ffmpeg([
+      '-i',
+      masterFile,
+      ...vp9,
+      '-cpu-used',
+      '2',
+      '-auto-alt-ref',
+      '1',
+      '-lag-in-frames',
+      '25',
+      '-pass',
+      '2',
+      '-passlogfile',
+      log,
+      join(outDir, `${name}.webm`),
+    ])
+    await rm(`${log}-0.log`, { force: true })
+  }
+  await rm(masterFile, { force: true })
   await writeFile(join(outDir, `${name}.frames.sha256`), `${hashes.join('\n')}\n`)
   // The poster again as lossless WebP: the same pixels at about a seventh of the size, for the web page.
   const poster = join(outDir, `${name}-poster.png`)

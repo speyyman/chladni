@@ -28,9 +28,13 @@ assert.deepEqual(c, a.slice(20), 'a stretch started part-way differs from the sa
 console.log('ok frames 420-439 are the same whether rendering starts at 400 or at 420')
 
 const probe = JSON.parse(
-  execFileSync(process.env.FFPROBE ?? 'ffprobe', ['-v', 'error', '-count_frames', '-show_streams', '-of', 'json', `${root}out-e2e/a/${name}.mp4`], {
-    encoding: 'utf8',
-  }),
+  execFileSync(
+    process.env.FFPROBE ?? 'ffprobe',
+    ['-v', 'error', '-count_frames', '-show_streams', '-of', 'json', `${root}out-e2e/a/${name}.mp4`],
+    {
+      encoding: 'utf8',
+    },
+  ),
 ).streams[0]
 assert.equal(probe.codec_name, 'h264')
 assert.equal(probe.width, 1920)

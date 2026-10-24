@@ -81,7 +81,10 @@ export class Painter {
   ) {
     this.orientation = orientation
     this.layout = layoutFor(orientation)
-    this.benches = { square: new Bench({ shape: 'square', grains: GRAINS, seed: SEED.square }), circle: new Bench({ shape: 'circle', grains: GRAINS, seed: SEED.circle }) }
+    this.benches = {
+      square: new Bench({ shape: 'square', grains: GRAINS, seed: SEED.square }),
+      circle: new Bench({ shape: 'circle', grains: GRAINS, seed: SEED.circle }),
+    }
   }
 
   get resonanceHz() {
@@ -192,7 +195,9 @@ export class Painter {
     const near = bench.nearest(m.hz)!
     const rows: { text: string; accent?: boolean; dim?: boolean }[] = [
       { text: `frequency  ${(m.hz < 100 ? m.hz.toFixed(1) : m.hz.toFixed(0)).padStart(6)} Hz`, accent: m.holding },
-      { text: `mode       ${m.holding ? (m.plate === 'square' ? `Ω ${near.omega.toFixed(2)}` : `n ${near.label.split(',')[0]}, s ${near.label.split(',')[1]}`) : '–'}` },
+      {
+        text: `mode       ${m.holding ? (m.plate === 'square' ? `Ω ${near.omega.toFixed(2)}` : `n ${near.label.split(',')[0]}, s ${near.label.split(',')[1]}`) : '–'}`,
+      },
       { text: `motion     ${strength < 0.05 ? 'too weak to throw sand' : strength.toFixed(2)}`, dim: strength < 0.05 },
     ]
     ctx.font = `400 26px ${MONO}`
