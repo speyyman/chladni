@@ -66,7 +66,7 @@ export function momentAt(t: number, resonanceHz: { square: number[]; circle: num
 
 export type Cue = { start: number; end: number; text: string }
 
-/** Every caption, in order. They appear in the frame and in the WebVTT file. */
+/** Every caption, in order. They appear in the frame and in the WebVTT file. Each stays up long enough to read (at most 3 words a second). */
 export function cues(resonanceHz: { square: number[]; circle: number[] }): Cue[] {
   const [sq, disc] = parts()
   const slot = (p: Part, k: number) => p.start + k * (RAMP + HOLD)
@@ -76,17 +76,12 @@ export function cues(resonanceHz: { square: number[]; circle: number[] }): Cue[]
     { start: 0.5, end: 4.8, text: 'Sand on a steel plate, shaken at one frequency at a time.' },
     {
       start: slot(sq, 0),
-      end: slot(sq, 0) + RAMP,
-      text: 'A 24 cm square of steel, 1 mm thick, free at every edge. Most frequencies barely move it.',
-    },
-    {
-      start: slot(sq, 0) + RAMP,
       end: slot(sq, 1),
-      text: `At ${hz(s0)} it resonates. Where the plate moves, sand is thrown off. Where it stays still, sand collects.`,
+      text: `A square of steel, free at every edge, swept up to its first resonance at ${hz(s0)}.`,
     },
-    { start: slot(sq, 1), end: slot(sq, 1) + RAMP, text: 'Between resonances the plate hardly moves, and the sand rests.' },
+    { start: slot(sq, 1), end: slot(sq, 2), text: 'Where the plate moves, sand is thrown up. Where it stays still, sand collects.' },
     {
-      start: slot(sq, 1) + RAMP,
+      start: slot(sq, 2),
       end: slot(sq, 4),
       text: 'Each resonance has its own still lines, its nodal lines. Same plate, different frequency.',
     },

@@ -47,16 +47,14 @@ describe('captions', () => {
       if (i) expect(c.start).toBeGreaterThanOrEqual(list[i - 1]!.end)
       expect(c.text).not.toMatch(/undefined|NaN|!/)
     })
-    expect(list.some((c) => c.text.includes(`At ${hz.square[0]!.toFixed(1)} Hz it resonates`))).toBe(true)
+    expect(list.some((c) => c.text.includes(`first resonance at ${hz.square[0]!.toFixed(1)} Hz`))).toBe(true)
   })
 
-  it('say "between resonances" only while the frequency is gliding', () => {
-    const c = list.find((x) => x.text.startsWith('Between resonances'))!
-    for (let t = c.start; t < c.end; t += 0.1) {
-      const m = momentAt(t, hz)
-      if (m.scene === 'plate') expect(m.holding).toBe(false)
+  it('stay up long enough to read, at most 3 words a second', () => {
+    for (const c of list) {
+      expect(c.text.split(/\s+/).length / (c.end - c.start)).toBeLessThanOrEqual(3)
+      expect(cueAt(list, c.start + 0.01)).toBe(c)
     }
-    expect(cueAt(list, c.start + 0.01)).toBe(c)
   })
 
   it('write valid WebVTT', () => {

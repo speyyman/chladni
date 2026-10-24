@@ -48,7 +48,7 @@ Lower level: `squareModes()`, `circleModes()`, `modeField()`, `nodalLines()`, `d
 
 **Driving it.** The plate is driven at one point. Each mode responds like a lightly damped oscillator in proportion to how much it moves at that point (standard modal superposition), so a mode with a node at the drive point is not excited at all. The damping ratio, 0.004, is an assumption.
 
-**Sand.** Grains feel the plate's acceleration. Where it is strong they are thrown and land a random distance away. Below a threshold they are not thrown, but while the plate rings they creep slowly towards stiller plate, as Faraday saw small heaps do on a gently vibrating plate (1831, §6). So they wander out of moving regions and end on the nodal lines; tests check that most grains end within 0.03 of the exact lines of the two lowest modes. It is a deliberately simple model: no bouncing dynamics, friction, air currents or grains falling off the edge.
+**Sand.** Grains feel the plate's acceleration. Where it is strong they are thrown and land a random distance away. Below a threshold they are not thrown, but while the plate rings they creep slowly towards stiller plate, as Faraday saw small heaps of lycopodium powder do on a gently vibrating plate (1831, §6). So they wander out of moving regions and end on the nodal lines; tests check that most grains end within 0.03 of the exact lines of the two lowest modes. It is a deliberately simple model: no bouncing dynamics, friction, air currents or grains falling off the edge.
 
 **Hertz.** Frequencies are for a 24 cm square, or a 24 cm disc, of steel 1 mm thick (E = 200 GPa, ρ = 7850 kg/m³, ν = 0.3, typical handbook values), from f = Ω / (2π a²) · √(D / ρh).
 
