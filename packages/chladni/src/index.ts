@@ -22,4 +22,4 @@ export { modeField, nodalLines, sample, coord, isInside, type Field, type Mode, 
 export { preparePlate, drive, resonantPeak, referenceAcceleration, type Plate, type DriveOptions, type Response } from './drive.js'
 export { Sand, mulberry32, type SandOptions, type StepOptions } from './sand.js'
 export { hertz, omegaFor, STEEL, DEMO_SQUARE, DEMO_DISC, type Material, type PhysicalPlate } from './plate.js'
-export { Bench, labelFor, type BenchOptions, type Resonance } from './bench.js'
+export { Bench, labelFor, prepareBench, type BenchOptions, type PreparedBench, type Resonance } from './bench.js'

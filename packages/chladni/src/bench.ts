@@ -32,6 +32,37 @@ export type BenchOptions = {
   damping?: number
   /** See DriveOptions.prune. Default 0.01. */
   prune?: number
+  /**
+   * The expensive part (modes, sampled fields, reference acceleration), computed
+   * elsewhere, for example in a Web Worker by `prepareBench` with the same options.
+   */
+  prepared?: PreparedBench
+}
+
+/** Everything a Bench computes up front, in a form that can cross a worker boundary. */
+export type PreparedBench = { modes: Mode[]; fields: Field[]; reference: number }
+
+const DEFAULT_AT = { x: 0.83, y: 0.31 }
+const resolveAt = (shape: PlateShape, at: { x: number; y: number }) => (shape === 'circle' && Math.hypot(at.x, at.y) > 0.95 ? { x: 0.7, y: 0.25 } : at)
+
+/** Compute a bench's modes, fields and reference acceleration: the slow part, about 0.3 s on a laptop. */
+export function prepareBench({
+  shape = 'square',
+  physical,
+  size = 128,
+  maxHz = 1600,
+  at = DEFAULT_AT,
+  damping = 0.004,
+  prune = 0.01,
+}: Omit<BenchOptions, 'prepared' | 'grains' | 'seed'> = {}): PreparedBench {
+  const phys = physical ?? (shape === 'square' ? DEMO_SQUARE : DEMO_DISC)
+  const maxOmega = omegaFor(maxHz, phys)
+  const modes: Mode[] =
+    shape === 'square'
+      ? squareModes({ terms: 16 }).filter((m) => m.omega <= maxOmega)
+      : circleModes({ maxN: 14, maxLambda: Math.sqrt(maxOmega) + 0.3 }).filter((m) => m.omega <= maxOmega)
+  const plate = preparePlate(modes, size)
+  return { modes, fields: plate.fields, reference: referenceAcceleration(plate, { at: resolveAt(shape, at), damping, prune }) }
 }
 
 export const labelFor = (m: Mode) =>
@@ -58,24 +89,22 @@ export class Bench {
     grains = 20000,
     seed = 1,
     maxHz = 1600,
-    at = { x: 0.83, y: 0.31 },
+    at = DEFAULT_AT,
     damping = 0.004,
     prune = 0.01,
+    prepared,
   }: BenchOptions = {}) {
     this.shape = shape
     this.physical = physical ?? (shape === 'square' ? DEMO_SQUARE : DEMO_DISC)
-    const maxOmega = omegaFor(maxHz, this.physical)
-    const modes: Mode[] =
-      shape === 'square'
-        ? squareModes({ terms: 16 }).filter((m) => m.omega <= maxOmega)
-        : circleModes({ maxN: 14, maxLambda: Math.sqrt(maxOmega) + 0.3 }).filter((m) => m.omega <= maxOmega)
-    this.plate = preparePlate(modes, size)
-    this.resonances = modes.map((m, index) => ({ index, hz: hertz(m.omega, this.physical), omega: m.omega, label: labelFor(m) }))
+    const p = prepared ?? prepareBench({ shape, physical, size, maxHz, at, damping, prune })
+    this.plate = { modes: p.modes, fields: p.fields }
+    this.resonances = p.modes.map((m, index) => ({ index, hz: hertz(m.omega, this.physical), omega: m.omega, label: labelFor(m) }))
     this.sand = new Sand({ count: grains, seed, plate: shape })
-    this.opts = { at: shape === 'circle' && Math.hypot(at.x, at.y) > 0.95 ? { x: 0.7, y: 0.25 } : at, damping, prune }
-    this.reference = referenceAcceleration(this.plate, this.opts)
-    this.acceleration = { size, values: new Float32Array(size * size) }
-    this.shapeField = { size, values: new Float32Array(size * size) }
+    this.opts = { at: resolveAt(shape, at), damping, prune }
+    this.reference = p.reference
+    const n = p.fields[0]?.size ?? size
+    this.acceleration = { size: n, values: new Float32Array(n * n) }
+    this.shapeField = { size: n, values: new Float32Array(n * n) }
     this.setHz(this.resonances[0]?.hz ?? 100)
   }
 

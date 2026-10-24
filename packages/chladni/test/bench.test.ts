@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Bench } from '../src/bench.js'
+import { Bench, prepareBench } from '../src/bench.js'
 
 describe('bench', () => {
   it('lists the square’s resonances in hertz for the 24 cm steel plate, lowest near 57 Hz', () => {
@@ -31,5 +31,20 @@ describe('bench', () => {
     const b = new Bench({ grains: 100 })
     b.setHz(b.resonances[1]!.hz)
     expect(b.nodalLines().length).toBeGreaterThan(100)
+  })
+})
+
+describe('prepared bench', () => {
+  it('behaves the same when its slow part is computed separately (as in a worker)', () => {
+    const prepared = prepareBench({ shape: 'circle' })
+    const copy = structuredClone(prepared)
+    const a = new Bench({ shape: 'circle', grains: 300, seed: 4 })
+    const b = new Bench({ shape: 'circle', grains: 300, seed: 4, prepared: copy })
+    expect(b.resonances).toEqual(a.resonances)
+    a.setHz(a.resonances[3]!.hz)
+    b.setHz(b.resonances[3]!.hz)
+    a.step(20)
+    b.step(20)
+    expect(b.sand.x).toEqual(a.sand.x)
   })
 })

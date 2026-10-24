@@ -2,12 +2,13 @@ import '@fontsource/instrument-sans/latin-400.css'
 import '@fontsource/instrument-sans/latin-600.css'
 import '@fontsource/martian-mono/latin-400.css'
 import './style.css'
-import { Bench, type PlateShape } from 'chladni'
+import { Bench, type PlateShape, type PreparedBench } from 'chladni'
 import { soundFrequency, soundOff, soundOn } from './audio'
 
 const MIN_HZ = 40
 const MAX_HZ = 1600
-const GRAINS = 20000
+// Fewer grains on small screens: the plate is smaller, and so usually is the processor.
+const GRAINS = matchMedia('(max-width: 600px)').matches ? 10000 : 20000
 // With reduced motion the sand jumps straight to its pattern: this many steps at once.
 const SETTLE = 600
 
@@ -189,17 +190,37 @@ function setHz(hz: number, { fromSlider = false } = {}) {
   draw()
 }
 
-function useShape(shape: PlateShape) {
+// The plate's modes are computed in a worker, once per shape.
+const worker = new Worker(new URL('./worker.ts', import.meta.url), { type: 'module' })
+const pending = new Map<PlateShape, Promise<PreparedBench>>()
+function prepare(shape: PlateShape) {
+  let p = pending.get(shape)
+  if (!p) {
+    p = new Promise((resolve) => {
+      const onMessage = (e: MessageEvent<{ shape: PlateShape; prepared: PreparedBench }>) => {
+        if (e.data.shape !== shape) return
+        worker.removeEventListener('message', onMessage)
+        resolve(e.data.prepared)
+      }
+      worker.addEventListener('message', onMessage)
+      worker.postMessage({ shape })
+    })
+    pending.set(shape, p)
+  }
+  return p
+}
+
+async function useShape(shape: PlateShape) {
   stopSweep()
+  for (const s of document.querySelectorAll<HTMLButtonElement>('[data-shape]'))
+    s.setAttribute('aria-pressed', String(s.dataset.shape === shape))
   let b = benches.get(shape)
   if (!b) {
     statusOut.textContent = 'Computing modes…'
-    b = new Bench({ shape, grains: bench?.sand.count ?? GRAINS })
+    b = new Bench({ shape, grains: bench?.sand.count ?? GRAINS, prepared: await prepare(shape) })
     benches.set(shape, b)
   }
   bench = b
-  for (const s of document.querySelectorAll<HTMLButtonElement>('[data-shape]'))
-    s.setAttribute('aria-pressed', String(s.dataset.shape === shape))
   size = 0
   resize()
   renderModes()
@@ -294,6 +315,7 @@ canvas.addEventListener('keydown', (e) => {
 // If a frame's work takes too long, do less: first one sand step per frame, then fewer grains.
 let slow = 0
 function frame(t: number) {
+  if (!bench) return requestAnimationFrame(frame)
   const dt = lastFrame ? Math.min(0.1, (t - lastFrame) / 1000) : 0
   lastFrame = t
   if (!reduced.matches) {
@@ -326,6 +348,7 @@ function frame(t: number) {
 }
 
 addEventListener('resize', () => {
+  if (!bench) return
   resize()
   draw()
 })
@@ -343,5 +366,12 @@ declare global {
 }
 window.chladni = { bench: () => bench, stepsPerFrame: () => stepsPerFrame }
 
-useShape('square')
+// Controls wait for the first plate; the worker usually answers within a second.
+const panel = $('controls')
+panel.inert = true
+freq.disabled = true
+void useShape('square').then(() => {
+  panel.inert = false
+  freq.disabled = false
+})
 requestAnimationFrame(frame)

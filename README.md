@@ -63,7 +63,7 @@ Lower level: `squareModes()`, `circleModes()`, `modeField()`, `nodalLines()`, `d
 
 ## Performance
 
-Measured in headless Chromium on the build machine (`npm run e2e`): 60 fps while sweeping with 20,000 grains. With the CPU slowed 4× it starts at about 30 fps; the demo notices long frames and sheds work, first to one sand step per frame and then to half the grains, and is back to 60 fps with 10,000 grains within a few seconds.
+The plate's modes are computed in a Web Worker, so the page paints and stays responsive while the maths runs (Lighthouse mobile: 99 performance, 100 accessibility, best practices and SEO). Measured in headless Chromium on the build machine (`npm run e2e`): 60 fps while sweeping with 20,000 grains. With the CPU slowed 4×, the demo notices long frames and sheds work, first to one sand step per frame and then to half the grains. In two runs it started at 30 fps and 60 fps respectively, and both ran at 60 fps after the fallback (10,000 grains in the first run, 20,000 with one step per frame in the second). Small screens start with 10,000 grains.
 
 ## Limitations
 

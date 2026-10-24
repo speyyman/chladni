@@ -37,7 +37,9 @@ for (const [name, viewport] of [
     // Reduced motion, so each change settles the sand at once and the shot is repeatable.
     const page = await browser.newPage({ viewport, reducedMotion: 'reduce', deviceScaleFactor: 1 })
     await page.goto(url, { waitUntil: 'networkidle' })
+    await page.waitForFunction(() => window.chladni.bench() && !document.getElementById('controls').inert)
     await page.click(`[data-shape="${shape}"]`)
+    await page.waitForFunction((s) => window.chladni.bench()?.shape === s, shape)
     await page.click(`#modes li:nth-child(${mode + 1}) button`)
     await page.screenshot({ path: join(out, `demo-${shape}-${name}.png`), fullPage: name === '375' })
     await page.close()

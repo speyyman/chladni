@@ -28,6 +28,9 @@ await new Promise((r) => server.listen(0, '127.0.0.1', r))
 const url = `http://127.0.0.1:${server.address().port}/chladni/`
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {})
 const report = []
+// The plate is computed in a worker: wait until it is in place and the controls are live.
+const ready = (page, shape = 'square') =>
+  page.waitForFunction((s) => window.chladni.bench()?.shape === s && !document.getElementById('controls').inert, shape)
 const ok = (m) => {
   report.push(m)
   console.log(`ok ${m}`)
@@ -61,6 +64,7 @@ const spyAudio = () => {
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
   await page.addInitScript(spyAudio)
   await page.goto(url, { waitUntil: 'networkidle' })
+  await ready(page)
 
   // Everything but the sound switch: no audio at all.
   await page.click('#sweep')
@@ -78,7 +82,9 @@ const spyAudio = () => {
   await page.click('#lines')
   await page.click('#scatter')
   await page.click('[data-shape="circle"]')
+  await ready(page, 'circle')
   await page.click('[data-shape="square"]')
+  await ready(page)
   const before = await page.evaluate(() => window.chladni.bench().drivePoint)
   await page.focus('#plate')
   await page.keyboard.press('ArrowLeft')
@@ -104,7 +110,9 @@ const spyAudio = () => {
   // Disc.
   const page = await browser.newPage()
   await page.goto(url, { waitUntil: 'networkidle' })
+  await ready(page)
   await page.click('[data-shape="circle"]')
+  await ready(page, 'circle')
   const labels = await page.evaluate(() =>
     window.chladni
       .bench()
@@ -120,6 +128,7 @@ const spyAudio = () => {
   // Reduced motion: the sand is settled as soon as the frequency changes, and Sweep jumps.
   const page = await browser.newPage({ reducedMotion: 'reduce' })
   await page.goto(url, { waitUntil: 'networkidle' })
+  await ready(page)
   await page.click('#sweep')
   const s = await page.evaluate(() => {
     const b = window.chladni.bench()
@@ -137,6 +146,7 @@ const spyAudio = () => {
   // 375 px: no horizontal scrolling.
   const page = await browser.newPage({ viewport: { width: 375, height: 812 } })
   await page.goto(url, { waitUntil: 'networkidle' })
+  await ready(page)
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth), 375)
   ok('375 px wide: no horizontal overflow')
   await page.close()
@@ -148,6 +158,7 @@ const spyAudio = () => {
     const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
     const cdp = await page.context().newCDPSession(page)
     await page.goto(url, { waitUntil: 'networkidle' })
+    await ready(page)
     await cdp.send('Emulation.setCPUThrottlingRate', { rate })
     await page.click('#sweep')
     const measure = () =>
