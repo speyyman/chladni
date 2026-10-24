@@ -7,19 +7,21 @@
   "type": "module",
   "workspaces": [
     "packages/chladni",
-    "apps/demo"
+    "apps/demo",
+    "film"
   ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "build": "npm run build -w chladni && npm run build -w chladni-demo",
-    "test": "npm test -w chladni",
+    "test": "npm test -w chladni && npm test -w chladni-film",
     "e2e": "npm run build && node apps/demo/test/e2e.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
-    "typecheck": "tsc -p packages/chladni --noEmit && tsc -p apps/demo --noEmit",
-    "docs:shots": "node apps/demo/test/screenshots.mjs"
+    "typecheck": "tsc -p packages/chladni --noEmit && tsc -p apps/demo --noEmit && tsc -p film --noEmit",
+    "docs:shots": "node apps/demo/test/screenshots.mjs",
+    "film": "npm run build -w chladni && npm run render -w chladni-film"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
