@@ -43,7 +43,8 @@ export type BenchOptions = {
 export type PreparedBench = { modes: Mode[]; fields: Field[]; reference: number }
 
 const DEFAULT_AT = { x: 0.83, y: 0.31 }
-const resolveAt = (shape: PlateShape, at: { x: number; y: number }) => (shape === 'circle' && Math.hypot(at.x, at.y) > 0.95 ? { x: 0.7, y: 0.25 } : at)
+const resolveAt = (shape: PlateShape, at: { x: number; y: number }) =>
+  shape === 'circle' && Math.hypot(at.x, at.y) > 0.95 ? { x: 0.7, y: 0.25 } : at
 
 /** Compute a bench's modes, fields and reference acceleration: the slow part, about 0.3 s on a laptop. */
 export function prepareBench({
