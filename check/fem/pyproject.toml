@@ -1,0 +1,10 @@
+[project]
+name = "chladni-fem-check"
+version = "0.1.0"
+description = "Independent finite-element check of the free square plate frequencies used by chladni."
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["numpy==2.5.4", "scipy==1.18.1", "scikit-fem==10.0.2"]
+
+[tool.ruff]
+line-length = 110
